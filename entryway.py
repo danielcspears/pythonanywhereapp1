@@ -1,4 +1,4 @@
-from flask import Flask, Response, render_template, request, jsonify, session, Response, flash
+from flask import Flask, Response, render_template, request, jsonify, Response, flash, session
 import json
 from wtforms import TextField, SelectField,Form, validators
 from werkzeug import secure_filename
@@ -7,13 +7,13 @@ import numpy as np
 from pandas.io.json import json_normalize
 from states import states
 from jobs2 import jobs2
-from flask_sqlalchemy import SQLAlchemy 
+from flask_sqlalchemy import SQLAlchemy
 
-import pymysql
-pymysql.install_as_MySQLdb()
+# import pymysql
+# pymysql.install_as_MySQLdb()
 import MySQLdb
 
-application = Flask(__name__)   
+application = Flask(__name__)
 application.config.update(dict(
     DEBUG=True,
 ))
@@ -26,14 +26,14 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, backref
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.engine.url import URL
- 
+
 import config
 #    Performs database connection using database settings from config.py.
 #    Returns sqlalchemy engine instance
 engine = create_engine(URL(**config.DATABASE))
 #    return engine
 
-    
+
 class SearchForm(Form):
     autojob = TextField('Enter Job Title',[validators.Required("Please Select from the Suggested List:")], id='job_autocomplete')
     autojob2 = TextField('Enter Job Title',[validators.Required("Please Select from the Suggested List:")], id='job_autocomplete1')
@@ -50,7 +50,7 @@ class SearchForm(Form):
     compcity3 = TextField('Enter Company City:', id ="compcity3")
     compstate3 = SelectField('Enter Company State:', choices=states.items(), default='LA')
     compyears3 = TextField('Enter Years Worked:', id ="compyears3")
-    
+
 @application.route('/_autocomplete', methods=['GET'])
 def autocomplete():
     field = sorted(list(jobs2.keys()))
@@ -62,13 +62,13 @@ def index():
     return render_template("entryform.html", form=form)
 
 
-from sqlalchemy import *
-from sqlalchemy import MetaData, Table
-from sqlalchemy import create_engine, ForeignKey
-from sqlalchemy import Column, Date, Integer, String
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import relationship, backref
-from sqlalchemy.orm import sessionmaker
+# from sqlalchemy import *
+# from sqlalchemy import MetaData, Table
+# from sqlalchemy import create_engine, ForeignKey
+# from sqlalchemy import Column, Date, Integer, String
+# from sqlalchemy.ext.declarative import declarative_base
+# from sqlalchemy.orm import relationship, backref
+# from sqlalchemy.orm import sessionmaker
 
 db_name = "tasksx.db"
 table_name = "TASK"
@@ -79,7 +79,7 @@ table_name = "TASK"
 #engine = create_engine("mysql+pymysql://root:Daniel12$@localhost/tasksx")
 
 
-metadata = MetaData(bind=engine)  
+metadata = MetaData(bind=engine)
 Base = declarative_base(engine)
 
 class Tasks(Base):
@@ -93,12 +93,14 @@ def loadSession():
     session = Session()
     return session
 
+application.secret_key = '987'
 
 if __name__ == "__main__":
-    session = loadSession()
-    application.secret_key = 'super secret key'
+    # session1 = loadSession()
+    application.secret_key = '987'
     application.config['SESSION_TYPE'] = 'filesystem'
 
+session = loadSession()
 def smart_title(s):
     return ' '.join(w if w.isupper() else w.capitalize() for w in s.split())
 
@@ -126,30 +128,31 @@ def job_look():
             compstate3 = request.form['compstate3']
             compyears3 = request.form['compyears3']
 
-            for key, value in jobs2.items():    
+            for key, value in jobs2.items():
                 if key == jobname:
                     jobnamev = value
             qry = session.query(Tasks.Task).filter(Tasks.Job == jobnamev)
             results =  [item[0] for item in qry.all()]
             bullet = "<li>•&nbsp;&nbsp;"
             msg = bullet+"<li>•&nbsp;&nbsp;".join([str(i) for i in results])
-        
-        
-            for key, value in jobs2.items():    
+
+
+            for key, value in jobs2.items():
                 if key == jobname2:
                     jobnamev2 = value
             qry2 = session.query(Tasks.Task).filter(Tasks.Job == jobnamev2)
             results2 =   [item[0] for item in qry2.all()]
             bullet = "<li>•&nbsp;&nbsp;"
             msg2 = bullet + '<li>•&nbsp;&nbsp;'.join([str(i) for i in results2])
-        
-            for key, value in jobs2.items():    
+
+            for key, value in jobs2.items():
                 if key == jobname3:
                     jobnamev3 = value
             qry3 = session.query(Tasks.Task).filter(Tasks.Job == jobnamev3)
             results3 =   [item[0] for item in qry3.all()]
             bullet = "<li>•&nbsp;&nbsp;"
             msg3 = bullet + '<li>•&nbsp;&nbsp;'.join([str(i) for i in results3])
+            session.rollback()
 
     return render_template("makeresu.html", results=msg, jobname = jobname, company=company, compcity=compcity, compstate= compstate, compyears=compyears, jobname2=jobname2,company2=company2, compcity2=compcity2, compstate2= compstate2, compyears2=compyears2, results2 = msg2,
 jobname3=jobname3,company3=company3, compcity3=compcity3, compstate3= compstate3, compyears3=compyears3, results3 = msg3)
