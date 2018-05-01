@@ -152,7 +152,7 @@ def job_look():
             results3 =   [item[0] for item in qry3.all()]
             bullet = "<li>•&nbsp;&nbsp;"
             msg3 = bullet + '<li>•&nbsp;&nbsp;'.join([str(i) for i in results3])
-            session.rollback()
+            session.close()
 
     return render_template("makeresu.html", results=msg, jobname = jobname, company=company, compcity=compcity, compstate= compstate, compyears=compyears, jobname2=jobname2,company2=company2, compcity2=compcity2, compstate2= compstate2, compyears2=compyears2, results2 = msg2,
 jobname3=jobname3,company3=company3, compcity3=compcity3, compstate3= compstate3, compyears3=compyears3, results3 = msg3)
